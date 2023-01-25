@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-depl
+  labels:
+    app: mongo-depl
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      app: mongo-depl
+  template:
+    metadata:
+      labels:
+        app: mongo-depl
+    spec:
+      containers:
+        - name: mongo-depl
+          image: mongo   
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-scrt
+                  key: mongo-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-scrt
+                  key: mongo-password 
+
+
+--- 
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: mongo-srv
+spec:
+  selector:
+     app: mongo-depl
+  type: ClusterIP
+  ports:
+    - name: mongo
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
